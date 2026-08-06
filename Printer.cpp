@@ -1,5 +1,4 @@
 ﻿#include "Printer.h"
-
 #include <cstdlib>
 #include <ctime>
 
@@ -109,6 +108,58 @@ void Printer::SetState(int NewState)
 }
 
 int Printer::Print(int Sheets, int Fill)
+{
+    // перевірка працездатності принтера та коректності заданих параметрів
+    if (!Power || State != READY)
+        return 0;
+
+    if (Sheets < 0 || Fill < 0 || Fill > 100)
+        return 0;
+
+    int LuckSheets;
+
+    // імітація виникнення випадкової помилки із заданою ймовірністю
+    if (rand() % 100 < ERRORPROB * 100)
+        LuckSheets = rand() % Sheets;
+    else
+        LuckSheets = Sheets;
+
+    // обчислення кількості сторінок, на друк яких вистачить чорнил
+    int PosSheetsByInk = Ink * 50 / Fill;
+    int PosPaper;
+
+    if (PosSheetsByInk < LuckSheets)
+    {
+        PosPaper = PosSheetsByInk;
+        SetState(NOINK);
+    }
+
+    else if (Paper < LuckSheets)
+    {
+        PosPaper = Paper;
+        SetState(NOPAPER);
+    }
+
+    else
+    {
+        PosPaper = LuckSheets;
+        SetState(READY);
+    }
+
+    if (State == NOINK)
+        Ink = 0;
+    else
+        Ink -= PosPaper * Fill / 50;
+
+    UnloadPaper(PosPaper);
+
+    if (LuckSheets < Sheets)
+        SetState(ERROR);
+
+    return PosPaper;
+}
+
+int Printer::Print(int Sheets, int Fill)
 
 {
 
@@ -117,7 +168,54 @@ int Printer::Print(int Sheets, int Fill)
 
 	if (Sheets < 0 || Fill < 0 || Fill > 100) return 0; int LuckSheets;
 
-	//імітація виникнення випадкової помилки із заданою ймовірністю
+	    // імітація виникнення випадкової помилки із заданою ймовірністю
+    if (rand() % 100 < ERRORPROB * 100)
+        LuckSheets = rand() % Sheets; //Перевірити випадок Print(0, ...) після завершення рефакторингу.
+    else
+        LuckSheets = Sheets;
+    // обчислення кількості сторінок, на друк яких вистачить наявних чорнил
+    int PosSheetsByInk = Ink * 50 / Fill;
+    int PosPaper;
+
+    // не вистачить чорнил
+    if (PosSheetsByInk < LuckSheets)
+    {
+        PosPaper = PosSheetsByInk;
+        SetState(NOINK);
+    }
+    // не вистачить паперу
+    else if (Paper < LuckSheets)
+    {
+        PosPaper = Paper;
+        SetState(NOPAPER);
+    }
+    // вистачить всього
+    else
+    {
+        PosPaper = LuckSheets;
+        SetState(READY);
+    }
+    // зменшення кількості чорнил і паперу
+
+    // обнулення Ink = 0 потрібне для усунення похибки,
+    // яка може виникати при обчисленні потрібної кількості чорнил
+    if (State == NOINK)
+        Ink = 0;
+    else
+        Ink -= PosPaper * Fill / 50;
+
+    UnloadPaper(PosPaper);
+
+    if (LuckSheets < Sheets)
+        SetState(ERROR);
+
+    return PosPaper;
+}
+int Printer::GetState()
+{
+    return State;
+}
+	/*//імітація виникнення випадкової помилки із заданою ймовірністю
 
 	if (rand() % 100 < ERRORPROB * 100) LuckSheets = rand() % Sheets; else LuckSheets = Sheets;
 
@@ -287,4 +385,4 @@ int main()
 
 	} while (true);
 return 0;
-}
+}*/
