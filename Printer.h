@@ -13,6 +13,7 @@ enum PrinterState
     ERROR
 };
 
+// Масив назв станів визначається в Printer.cpp
 extern const char PrinterStateName[5][10];
 
 class Printer
@@ -31,22 +32,31 @@ public:
     void TurnOn();
     void TurnOff();
 
-    bool GetPower() { return Power; }
+    bool GetPower()
+    {
+        return Power;
+    }
 
-    int LoadPaper(int);
-    int UnloadPaper(int);
+    int LoadPaper(int Sheets);
+    int UnloadPaper(int Sheets);
 
-    int GetPaper() { return Paper; }
+    int GetPaper()
+    {
+        return Paper;
+    }
 
-    int LoadInk(int);
+    int LoadInk(int Drops);
 
-    int GetInk() { return Ink; }
+    int GetInk()
+    {
+        return Ink;
+    }
 
-    int Print(int, int);
+    int Print(int Sheets, int Fill);
 
     int GetState();
 
-    const char* const GetStateName()
+    const char* GetStateName()
     {
         return PrinterStateName[State];
     }
