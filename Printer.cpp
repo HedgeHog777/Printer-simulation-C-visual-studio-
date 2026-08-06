@@ -1,176 +1,103 @@
-﻿#include <cstdlib>
-#include <iostream>
-#include <conio.h> 
-#include <cstdio>
+﻿#include "Printer.h"
 
+#include <cstdlib>
+#include <ctime>
 
-const int MAXPAPER = 100; const int MAXINK = 50;
-
-// ймовірність виникнення помилки друку (5 %) 
-const float ERRORPROB = 0.05;
-
-// перелічення можливих станів принтера
-
-enum PrinterState { OFF, READY, NOINK, NOPAPER, ERROR }; // масив констант з назвами станів
-
-const char PrinterStateName[5][10] = { "OFF", "READY", "NOINK", "NOPAPER", "ERROR" };
-class Printer {
-	bool Power; int State; int Paper; float Ink;
-
-	//приватний метод, що встановлює заданий стан
-
-	//метод призначено для внутрішнього використання іншими методами
-
-	//(користувач не може самовільно змінити стан принтера:
-
-	//для цього необхідно використовувати доступні методи)
-
-	void SetState(int);
-public:
-	//ініціалізація змінних класу початковими значеннями 
-	void Reset(void);
-
-	//управління живленням
-
-	void TurnOn(void); void TurnOff(void);
-
-
-	//inline-реалізація простого метода 
-	bool GetPower(void) { return Power; }
-
-	//управління папером
-
-	int LoadPaper(int); int UnloadPaper(int);
-
-	int GetPaper(void) { return Paper; }
-
-	//управління чорнилами 
-	int LoadInk(int);
-
-	int GetInk(void) { return Ink; }
-
-	//друк
-
-	int Print(int, int);
-
-	// визначення коду і назви стану 
-	int GetState(void);
-
-	const char* const GetStateName() { return PrinterStateName[State]; }
+const char PrinterStateName[5][10] =
+{
+    "OFF",
+    "READY",
+    "NOINK",
+    "NOPAPER",
+    "ERROR"
 };
 
 
 //реалізація класу принтера
 
-void Printer::Reset(void)
-
+void Printer::Reset()
 {
-
-	Power = false; SetState(OFF); Paper = 0;
-
-	Ink = 50;
-
+    Power = false;
+    SetState(OFF);
+    Paper = 0;
+    Ink = 50;
 }
 
-void Printer::TurnOn(void)
-
+void Printer::TurnOn()
 {
+    if (!Power)
+    {
+        Power = true;
+        SetState(READY);
+    }
 
-
-	if (!Power)
-
-	{
-
-		Power = true; SetState(READY);
-
-	}
-
-	// для імітації подальшого випадкового виникнення помилок при друку 
-	srand(1);
-
+    // для імітації подальшого випадкового виникнення помилок при друку
+    srand(1);
 }
-
-void Printer::TurnOff(void)
-
+void Printer::TurnOff()
 {
-
-	if (Power)
-
-	{
-
-		Power = false; SetState(OFF);
-
-	}
-
+    if (Power)
+    {
+        Power = false;
+        SetState(OFF);
+    }
 }
 
 int Printer::LoadPaper(int Sheets)
-
 {
+    if (Sheets < 0)
+        return 0;
 
-	if (Sheets < 0) return 0;
+    int NewPaper = Paper + Sheets;
 
-	int NewPaper = Paper + Sheets;
+    // перевірка, чи не перевищує кількість паперу найбільшу можливу
+    if (NewPaper > MAXPAPER)
+    {
+        Paper = MAXPAPER;
+        return MAXPAPER - Sheets;
+    }
 
-	// перевірка, чи не перевищує кількість паперу найбільшу можливу 
-	if (NewPaper > MAXPAPER)
-
-	{
-
-		Paper = MAXPAPER;
-
-		return MAXPAPER - Sheets;
-
-	}
-
-	Paper = NewPaper; return Sheets;
-
+    Paper = NewPaper;
+    return Sheets;
 }
 
 int Printer::UnloadPaper(int Sheets)
-
 {
+    if (Sheets < 0)
+        return 0;
 
-	if (Sheets < 0) return 0; int OldPaper = Paper;
+    int OldPaper = Paper;
+    int NewPaper = Paper - Sheets;
 
+    // перевірка, чи не перевищує кількість аркушів наявну
+    if (NewPaper < 0)
+    {
+        Paper = 0;
+        return OldPaper;
+    }
 
-
-	int NewPaper = Paper - Sheets;
-
-	// перевірка, чи не перевищує кількість аркушів наявну 
-	if (NewPaper < 0)
-
-	{
-
-		Paper = 0; return OldPaper;
-
-	}
-
-	Paper = NewPaper; return Sheets;
-
+    Paper = NewPaper;
+    return Sheets;
 }
-
 int Printer::LoadInk(int Drops)
-
 {
+    if (Power)
+        return 0;
 
-	if (Power) return 0;
+    if (Drops < 0)
+        return 0;
 
-	if (Drops < 0) return 0; int NewInk = Ink + Drops;
+    int NewInk = Ink + Drops;
 
-	// перевірка, чи не перевищує кількість чорнил найбільшу можливу 
-	if (NewInk > MAXINK)
+    // перевірка, чи не перевищує кількість чорнил найбільшу можливу
+    if (NewInk > MAXINK)
+    {
+        Ink = MAXINK;
+        return MAXINK - Drops;
+    }
 
-	{
-
-		Ink = MAXINK;
-
-		return MAXINK - Drops;
-
-	}
-
-	Ink = NewInk; return Drops;
-
+    Ink = NewInk;
+    return Drops;
 }
 
 void Printer::SetState(int NewState)
