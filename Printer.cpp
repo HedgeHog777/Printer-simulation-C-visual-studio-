@@ -1,7 +1,7 @@
 ﻿#include <cstdlib>
 #include <iostream>
 #include <conio.h> 
-#include <stdio.h>
+#include <cstdio>
 
 
 const int MAXPAPER = 100; const int MAXINK = 50;
@@ -248,7 +248,7 @@ int Printer::GetState(void)
 	return State;
 
 }
-void main()
+int main()
 
 {
 
@@ -359,5 +359,5 @@ void main()
 		}
 
 	} while (true);
-
+return 0;
 }
